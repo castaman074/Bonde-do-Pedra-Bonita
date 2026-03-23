@@ -146,7 +146,7 @@ function salvar() {
   const dia = document.getElementById("dia").value;
   const tipo = document.getElementById("tipo").value;
   const destinoSelect = document.getElementById("destino");
-const destino = destinoSelect.options[destinoSelect.selectedIndex].value;
+  const destino = destinoSelect.options[destinoSelect.selectedIndex].value;
 
   fetch(URL, {
     method: "POST",
@@ -174,8 +174,7 @@ function carregar() {
       escola.innerHTML = "";
       futsal.innerHTML = "";
 
-      data.slice(1).forEach(linha => {
-  data.forEach(linha => {
+      data.forEach(linha => {
   if (!linha[0]) return;
 
   const dia = linha[0];
