@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Bonde do Pedra Bonita</title>
+
+<link rel="manifest" href="manifest.json">
+
+<style>
+body {
+  font-family: Arial;
+  background: #f5f5f5;
+  padding: 10px;
+  max-width: 500px;
+  margin: auto;
+}
+
+h1 {
+  text-align: center;
+}
+
+.card {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+select, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+
+.kids {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+.kid {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.kid.active {
+  background: #4CAF50;
+  color: white;
+}
+
+.section-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.item {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>🚐 Bonde do Pedra Bonita</h1>
+
+<div class="card">
+
+<select id="motorista">
+  <option>Carmen/João</option>
+  <option>Denise/Telmo</option>
+  <option>Karina/Jéferson</option>
+  <option>Natália/Pedro</option>
+  <option>Vanessa/Cris</option>
+</select>
+
+<select id="dia">
+  <option>Segunda</option>
+  <option>Terça</option>
+  <option>Quarta</option>
+  <option>Quinta</option>
+  <option>Sexta</option>
+</select>
+
+<select id="tipo">
+  <option>Levar</option>
+  <option>Buscar</option>
+</select>
+
+<select id="destino">
+  <option>Escola</option>
+  <option>Futsal</option>
+</select>
+
+<div class="kids" id="kids"></div>
+
+<button onclick="salvar()">Salvar</button>
+
+</div>
+
+<div class="card">
+  <div class="section-title">📚 Escola</div>
+  <div id="escola"></div>
+</div>
+
+<div class="card">
+  <div class="section-title">⚽ Futsal</div>
+  <div id="futsal"></div>
+</div>
+
+<script>
+const URL = "https://script.google.com/macros/s/AKfycbyYTYlkkS-q4U1aYRb5mWjxSXb8LS3u_HtZC5JGsOxINNAzFwQ3R0WM2E6dNd_-SNF9qw/exec";
+
+const kidsLista = ["José","João","Joaquim","Beni","Bento","Finkler"];
+let selecionados = [];
+
+// montar botões das crianças
+const kidsDiv = document.getElementById("kids");
+kidsLista.forEach(kid => {
+  const div = document.createElement("div");
+  div.className = "kid";
+  div.innerText = kid;
+
+  div.onclick = () => {
+    if (selecionados.includes(kid)) {
+      selecionados = selecionados.filter(k => k !== kid);
+      div.classList.remove("active");
+    } else {
+      selecionados.push(kid);
+      div.classList.add("active");
+    }
+  };
+
+  kidsDiv.appendChild(div);
+});
+
+function salvar() {
+  const motorista = document.getElementById("motorista").value;
+  const dia = document.getElementById("dia").value;
+  const tipo = document.getElementById("tipo").value;
+  const destino = document.getElementById("destino").value;
+
+  fetch(URL, {
+    method: "POST",
+    body: JSON.stringify({
+      motorista,
+      dia,
+      tipo,
+      destino,
+      kids: selecionados
+    })
+  }).then(() => {
+    selecionados = [];
+    document.querySelectorAll(".kid").forEach(k => k.classList.remove("active"));
+    carregar();
+  });
+}
+
+function carregar() {
+  fetch(URL)
+    .then(res => res.json())
+    .then(data => {
+      const escola = document.getElementById("escola");
+      const futsal = document.getElementById("futsal");
+
+      escola.innerHTML = "";
+      futsal.innerHTML = "";
+
+      data.slice(1).forEach(linha => {
+        const item = `<div class="item">${linha[0]} - ${linha[2]} (${linha[3]}) → ${linha[4]}</div>`;
+
+        if (linha[1] === "Escola") {
+          escola.innerHTML += item;
+        } else {
+          futsal.innerHTML += item;
+        }
+      });
+    });
+}
+
+carregar();
+</script>
+
+</body>
+</html>
