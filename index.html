@@ -95,8 +95,8 @@ select, button {
 </select>
 
 <select id="destino">
-  <option>Escola</option>
-  <option>Futsal</option>
+  <option value="Escola">Escola</option>
+  <option value="Futsal">Futsal</option>
 </select>
 
 <div class="kids" id="kids"></div>
@@ -145,7 +145,10 @@ function salvar() {
   const motorista = document.getElementById("motorista").value;
   const dia = document.getElementById("dia").value;
   const tipo = document.getElementById("tipo").value;
-  const destino = document.getElementById("destino").value;
+  const destinoSelect = document.getElementById("destino");
+const destino = destinoSelect.options[destinoSelect.selectedIndex].value;
+
+alert(destino);
 
   fetch(URL, {
     method: "POST",
