@@ -175,21 +175,21 @@ function carregar() {
       futsal.innerHTML = "";
 
       data.forEach(linha => {
-  if (!linha[0]) return;
+        if (!linha[0]) return;
 
-  const dia = linha[0];
-  const destino = linha[1];
-  const motorista = linha[2];
-  const tipo = linha[3];
-  const kids = linha[4];
+        const dia = linha[0];
+        const destino = linha[1];
+        const motorista = linha[2];
+        const tipo = linha[3];
+        const kids = linha[4];
 
-  const item = `<div class="item">${dia} - ${motorista} (${tipo}) → ${kids}</div>`;
+        const item = `<div class="item">${dia} - ${motorista} (${tipo}) → ${kids}</div>`;
 
-  if (destino === "Escola") {
-    escola.innerHTML += item;
-  } else if (destino === "Futsal") {
-    futsal.innerHTML += item;
-  }
+        if (destino === "Escola") {
+          escola.innerHTML += item;
+       } else if (destino === "Futsal") {
+         futsal.innerHTML += item;
+       }
 });
     });
 }
