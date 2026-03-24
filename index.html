@@ -53,6 +53,7 @@ button {
 
 .btn-main { background: #007aff; }
 .btn-whats { background: #25d366; }
+.btn-entrar { background: #007aff; }
 
 .kids {
   display: grid;
@@ -201,6 +202,21 @@ function formatarData(diaSemana){
   return `${diaSemana.slice(0,3)}, ${d}/${m}`;
 }
 
+// 🔥 RESET AUTOMÁTICO DIÁRIO
+function checarReset(){
+  const hoje = new Date().toDateString();
+  const ultimo = localStorage.getItem("ultimoUso");
+
+  if(ultimo !== hoje){
+    localStorage.setItem("ultimoUso", hoje);
+
+    fetch(URL,{
+      method:"POST",
+      body:JSON.stringify({reset:true})
+    }).then(()=>carregar());
+  }
+}
+
 function carregar(){
   fetch(URL)
   .then(r=>r.json())
@@ -241,7 +257,7 @@ function carregar(){
 
       c.kids.forEach(k=> html+=`→ ${k}<br>`);
 
-      html+=`<button onclick='entrarNaCarona(${JSON.stringify(c)})'>Entrar nessa carona</button>`;
+      html+=`<button class="btn-entrar" onclick='entrarNaCarona(${JSON.stringify(c)})'>Entrar nessa carona</button>`;
       html+="</div>";
 
       lista.innerHTML+=html;
@@ -262,6 +278,8 @@ function enviarWhats(){
   window.open("https://wa.me/?text="+encodeURIComponent(lista));
 }
 
+// roda ao abrir
+checarReset();
 carregar();
 </script>
 
