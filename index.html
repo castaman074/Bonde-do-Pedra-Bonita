@@ -29,10 +29,6 @@ h1 {
 }
 
 select {
-  appearance: none;
-  background: white;
-  border: 1px solid #ddd;
-  font-size: 14px;
   width: 100%;
   padding: 10px;
   border-radius: 10px;
@@ -49,17 +45,8 @@ button {
   font-weight: bold;
 }
 
-.btn-vaga {
-  background: #34c759;
-}
-
-.btn-entrar {
-  background: #007aff;
-}
-
-.btn-whats {
-  background: #25d366;
-}
+.btn-vaga { background: #34c759; }
+.btn-whats { background: #25d366; }
 
 .kids {
   display: grid;
@@ -83,7 +70,7 @@ button {
 
 .car {
   border-bottom: 1px solid #eee;
-  padding: 8px 0;
+  padding: 10px 0;
 }
 </style>
 </head>
@@ -124,7 +111,7 @@ button {
 
 <div class="kids" id="kids"></div>
 
-<button class="btn-entrar" onclick="entrarCarona()">➕ Entrar na carona</button>
+<button onclick="alert('Escolha a carona abaixo 👇')">➕ Entrar na carona</button>
 
 <button class="btn-whats" onclick="enviarWhats()">📤 Avisar no WhatsApp</button>
 
@@ -175,27 +162,31 @@ function criarCarona() {
       destino,
       kids: []
     })
-  }).then(carregar);
+  }).then(() => {
+    alert("Carona criada! 🚐");
+    carregar();
+  });
 }
 
-function entrarCarona() {
-  const motorista = document.getElementById("motorista").value;
-  const dia = document.getElementById("dia").value;
-  const tipo = document.getElementById("tipo").value;
-  const destino = document.getElementById("destino").value;
+function entrarNaCarona(c) {
+  if (selecionados.length === 0) {
+    alert("Seleciona pelo menos uma criança");
+    return;
+  }
 
   fetch(URL, {
     method: "POST",
     body: JSON.stringify({
-      motorista,
-      dia,
-      tipo,
-      destino,
+      motorista: c.motorista,
+      dia: c.dia,
+      tipo: c.tipo,
+      destino: c.destino,
       kids: selecionados
     })
   }).then(() => {
     selecionados = [];
     document.querySelectorAll(".kid").forEach(k => k.classList.remove("active"));
+    alert("Entrou na carona! 👍");
     carregar();
   });
 }
@@ -271,6 +262,7 @@ function carregar() {
           html += `→ ${k}<br>`;
         });
 
+        html += `<button onclick='entrarNaCarona(${JSON.stringify(c)})'>Entrar nessa carona</button>`;
         html += "</div>";
 
         lista.innerHTML += html;
