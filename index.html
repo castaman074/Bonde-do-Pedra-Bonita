@@ -52,9 +52,7 @@ button {
 }
 
 .btn-main { background: #007aff; }
-.btn-whats { background: #007aff; }
-
-.btn-disabled { background: #ccc; }
+.btn-whats { background: #25d366; }
 
 .kids {
   display: grid;
@@ -112,8 +110,6 @@ button {
 
 <div class="kids" id="kids"></div>
 
-<button id="btnEntrar" class="btn-disabled">➕ Entrar na carona</button>
-
 <button class="btn-whats" onclick="enviarWhats()">📤 Avisar no WhatsApp</button>
 
 </div>
@@ -137,7 +133,6 @@ document.getElementById("destino").innerHTML = `<option>Escola</option><option>F
 
 const kidsLista = ["José","João","Joaquim","Beni","Bento","Finkler"];
 const kidsDiv = document.getElementById("kids");
-const btnEntrar = document.getElementById("btnEntrar");
 
 kidsLista.forEach(kid=>{
   const div=document.createElement("div");
@@ -152,21 +147,10 @@ kidsLista.forEach(kid=>{
       selecionados.push(kid);
       div.classList.add("active");
     }
-    atualizarBotaoEntrar();
   };
 
   kidsDiv.appendChild(div);
 });
-
-function atualizarBotaoEntrar(){
-  if(selecionados.length > 0){
-    btnEntrar.classList.remove("btn-disabled");
-    btnEntrar.style.background = "#007aff";
-  } else {
-    btnEntrar.classList.add("btn-disabled");
-    btnEntrar.style.background = "#ccc";
-  }
-}
 
 function confirmarCarona(){
   const motorista = document.getElementById("motorista").value;
@@ -195,12 +179,27 @@ function entrarNaCarona(c){
   }).then(()=>{
     selecionados=[];
     document.querySelectorAll(".kid").forEach(k=>k.classList.remove("active"));
-    atualizarBotaoEntrar();
     carregar();
   });
 }
 
-btnEntrar.onclick = () => alert("Escolha uma carona abaixo 👇");
+function formatarData(diaSemana){
+  const hoje = new Date();
+  const hojeIndex = hoje.getDay() - 1;
+
+  let target = ordemDias.indexOf(diaSemana);
+  let diff = target - hojeIndex;
+
+  if(diff < 0) diff += 7;
+
+  const data = new Date();
+  data.setDate(hoje.getDate() + diff);
+
+  const d = String(data.getDate()).padStart(2,"0");
+  const m = String(data.getMonth()+1).padStart(2,"0");
+
+  return `${diaSemana.slice(0,3)}, ${d}/${m}`;
+}
 
 function carregar(){
   fetch(URL)
@@ -234,8 +233,10 @@ function carregar(){
     });
 
     ordenado.forEach(c=>{
+      const dataFormatada = formatarData(c.dia);
+
       let html=`<div class="car">
-      <strong>${c.dia} - ${c.destino} (${c.tipo})</strong><br>
+      <strong>${dataFormatada} - ${c.destino} (${c.tipo})</strong><br>
       ${c.motorista}<br>`;
 
       c.kids.forEach(k=> html+=`→ ${k}<br>`);
