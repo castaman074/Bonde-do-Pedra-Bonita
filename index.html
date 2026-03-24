@@ -4,22 +4,39 @@
 <meta charset="UTF-8">
 <title>Barcas do Pedra Bonita</title>
 
+<link rel="manifest" href="manifest.json">
+
 <style>
 body {
-  font-family: -apple-system, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   background: #f2f2f7;
   padding: 10px;
   max-width: 500px;
   margin: auto;
 }
 
-h1 { text-align: center; }
+h1 {
+  text-align: center;
+  font-size: 22px;
+}
 
 .card {
   background: white;
   padding: 15px;
   border-radius: 16px;
   margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+select {
+  appearance: none;
+  background: white;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 8px;
 }
 
 button {
@@ -28,9 +45,20 @@ button {
   margin-top: 8px;
   border-radius: 10px;
   border: none;
-  background: #007aff;
   color: white;
   font-weight: bold;
+}
+
+.btn-vaga {
+  background: #34c759;
+}
+
+.btn-entrar {
+  background: #007aff;
+}
+
+.btn-whats {
+  background: #25d366;
 }
 
 .kids {
@@ -48,8 +76,9 @@ button {
 }
 
 .kid.active {
-  background: #34c759;
+  background: #007aff;
   color: white;
+  font-weight: bold;
 }
 
 .car {
@@ -61,7 +90,7 @@ button {
 
 <body>
 
-<h1>🚐 Barcas do Pedra Bonita</h1>
+<h1>⛴️ Barcas do Pedra Bonita</h1>
 
 <div class="card">
 
@@ -91,15 +120,18 @@ button {
   <option value="Futsal">Futsal</option>
 </select>
 
-<button onclick="criarCarona()">🚐 Tenho vaga</button>
+<button class="btn-vaga" onclick="criarCarona()">🚐 Tenho vaga</button>
 
 <div class="kids" id="kids"></div>
-<button onclick="entrarCarona()">➕ Entrar na carona</button>
+
+<button class="btn-entrar" onclick="entrarCarona()">➕ Entrar na carona</button>
+
+<button class="btn-whats" onclick="enviarWhats()">📤 Avisar no WhatsApp</button>
 
 </div>
 
 <div class="card">
-  <div id="lista"></div>
+  <div id="lista">Nenhuma carona ainda</div>
 </div>
 
 <script>
@@ -221,7 +253,14 @@ function carregar() {
         }
       });
 
-      Object.values(grupos).forEach(c => {
+      const carros = Object.values(grupos);
+
+      if (carros.length === 0) {
+        lista.innerHTML = "Nenhuma carona ainda";
+        return;
+      }
+
+      carros.forEach(c => {
         const dataFormatada = formatarData(c.dia);
 
         let html = `<div class="car">
@@ -238,6 +277,19 @@ function carregar() {
       });
 
     });
+}
+
+function enviarWhats() {
+  const lista = document.getElementById("lista").innerText;
+
+  if (!lista.trim() || lista.includes("Nenhuma")) {
+    alert("Nada para enviar ainda");
+    return;
+  }
+
+  const texto = `🚐 Barcas do Pedra Bonita\n\nAtualização de caronas:\n\n${lista}`;
+
+  window.open("https://wa.me/?text=" + encodeURIComponent(texto));
 }
 
 carregar();
