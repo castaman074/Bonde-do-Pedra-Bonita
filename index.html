@@ -2,74 +2,66 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Bonde do Pedra Bonita</title>
-
-<link rel="manifest" href="manifest.json">
+<title>Barcas do Pedra Bonita</title>
 
 <style>
 body {
-  font-family: Arial;
-  background: #f5f5f5;
+  font-family: -apple-system, sans-serif;
+  background: #f2f2f7;
   padding: 10px;
   max-width: 500px;
   margin: auto;
 }
 
-h1 {
-  text-align: center;
-}
+h1 { text-align: center; }
 
 .card {
   background: white;
   padding: 15px;
-  border-radius: 12px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  border-radius: 16px;
+  margin-bottom: 12px;
 }
 
-select, button {
+button {
   width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  margin-bottom: 10px;
-  border-radius: 8px;
+  padding: 12px;
+  margin-top: 8px;
+  border-radius: 10px;
+  border: none;
+  background: #007aff;
+  color: white;
+  font-weight: bold;
 }
 
 .kids {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 5px;
+  gap: 6px;
 }
 
 .kid {
   padding: 10px;
+  border-radius: 10px;
   border: 1px solid #ccc;
-  border-radius: 8px;
   text-align: center;
   cursor: pointer;
 }
 
 .kid.active {
-  background: #4CAF50;
+  background: #34c759;
   color: white;
 }
 
-.section-title {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.item {
-  font-size: 14px;
-  margin-bottom: 5px;
+.car {
+  border-bottom: 1px solid #eee;
+  padding: 8px 0;
 }
 </style>
-
 </head>
 
 <body>
 
-<h1>🚐 Bonde do Pedra Bonita</h1>
+<h1>🚐 Barcas do Pedra Bonita</h1>
 
 <div class="card">
 
@@ -90,8 +82,8 @@ select, button {
 </select>
 
 <select id="tipo">
-  <option>Levar</option>
-  <option>Buscar</option>
+  <option value="Levar">Ida</option>
+  <option value="Buscar">Volta</option>
 </select>
 
 <select id="destino">
@@ -99,30 +91,25 @@ select, button {
   <option value="Futsal">Futsal</option>
 </select>
 
+<button onclick="criarCarona()">🚐 Tenho vaga</button>
+
 <div class="kids" id="kids"></div>
-
-<button onclick="salvar()">Salvar</button>
+<button onclick="entrarCarona()">➕ Entrar na carona</button>
 
 </div>
 
 <div class="card">
-  <div class="section-title">📚 Escola</div>
-  <div id="escola"></div>
-</div>
-
-<div class="card">
-  <div class="section-title">⚽ Futsal</div>
-  <div id="futsal"></div>
+  <div id="lista"></div>
 </div>
 
 <script>
-const URL = "https://script.google.com/macros/s/AKfycbyYTYlkkS-q4U1aYRb5mWjxSXb8LS3u_HtZC5JGsOxINNAzFwQ3R0WM2E6dNd_-SNF9qw/exec";
+const URL = "https://script.google.com/macros/s/AKfycbxxDm-4-LKJxB2Xm3CmKmEASqLPz191zdK-ExBGAhtJp2RRpn1e6XpJY6seCnED1x99eA/exec";
 
 const kidsLista = ["José","João","Joaquim","Beni","Bento","Finkler"];
 let selecionados = [];
 
-// montar botões das crianças
 const kidsDiv = document.getElementById("kids");
+
 kidsLista.forEach(kid => {
   const div = document.createElement("div");
   div.className = "kid";
@@ -141,12 +128,29 @@ kidsLista.forEach(kid => {
   kidsDiv.appendChild(div);
 });
 
-function salvar() {
+function criarCarona() {
   const motorista = document.getElementById("motorista").value;
   const dia = document.getElementById("dia").value;
   const tipo = document.getElementById("tipo").value;
-  const destinoSelect = document.getElementById("destino");
-  const destino = destinoSelect.options[destinoSelect.selectedIndex].value;
+  const destino = document.getElementById("destino").value;
+
+  fetch(URL, {
+    method: "POST",
+    body: JSON.stringify({
+      motorista,
+      dia,
+      tipo,
+      destino,
+      kids: []
+    })
+  }).then(carregar);
+}
+
+function entrarCarona() {
+  const motorista = document.getElementById("motorista").value;
+  const dia = document.getElementById("dia").value;
+  const tipo = document.getElementById("tipo").value;
+  const destino = document.getElementById("destino").value;
 
   fetch(URL, {
     method: "POST",
@@ -164,33 +168,75 @@ function salvar() {
   });
 }
 
+function formatarData(diaSemana) {
+  const dias = ["Segunda","Terça","Quarta","Quinta","Sexta"];
+  const hoje = new Date();
+  const hojeIndex = hoje.getDay() - 1;
+
+  let target = dias.indexOf(diaSemana);
+  let diff = target - hojeIndex;
+
+  if (diff < 0) diff += 7;
+
+  const data = new Date();
+  data.setDate(hoje.getDate() + diff);
+
+  const d = String(data.getDate()).padStart(2,"0");
+  const m = String(data.getMonth()+1).padStart(2,"0");
+
+  return `${diaSemana.slice(0,3)}, ${d}/${m}`;
+}
+
 function carregar() {
   fetch(URL)
     .then(res => res.json())
     .then(data => {
-      const escola = document.getElementById("escola");
-      const futsal = document.getElementById("futsal");
 
-      escola.innerHTML = "";
-      futsal.innerHTML = "";
+      const lista = document.getElementById("lista");
+      lista.innerHTML = "";
 
-      data.forEach(linha => {
-        if (!linha[0]) return;
+      let grupos = {};
 
-        const dia = linha[0];
-        const destino = linha[1];
-        const motorista = linha[2];
-        const tipo = linha[3];
-        const kids = linha[4];
+      data.forEach(l => {
+        if (!l[0]) return;
 
-        const item = `<div class="item">${dia} - ${motorista} (${tipo}) → ${kids}</div>`;
+        const key = l[0] + l[1] + l[2] + l[3];
 
-        if (destino === "Escola") {
-          escola.innerHTML += item;
-       } else if (destino === "Futsal") {
-         futsal.innerHTML += item;
-       }
-});
+        if (!grupos[key]) {
+          grupos[key] = {
+            dia: l[0],
+            destino: l[1],
+            motorista: l[2],
+            tipo: l[3],
+            kids: []
+          };
+        }
+
+        if (l[4]) {
+          l[4].split(", ").forEach(k => {
+            if (!grupos[key].kids.includes(k)) {
+              grupos[key].kids.push(k);
+            }
+          });
+        }
+      });
+
+      Object.values(grupos).forEach(c => {
+        const dataFormatada = formatarData(c.dia);
+
+        let html = `<div class="car">
+          <strong>🚐 ${dataFormatada} - ${c.destino} (${c.tipo})</strong><br>
+          ${c.motorista}<br>`;
+
+        c.kids.forEach(k => {
+          html += `→ ${k}<br>`;
+        });
+
+        html += "</div>";
+
+        lista.innerHTML += html;
+      });
+
     });
 }
 
