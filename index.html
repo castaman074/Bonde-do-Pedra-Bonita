@@ -4,28 +4,22 @@
 <meta charset="UTF-8">
 <title>Barcas do Pedra Bonita</title>
 
-<link rel="manifest" href="manifest.json">
-
 <style>
 body {
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: -apple-system, sans-serif;
   background: #f2f2f7;
   padding: 10px;
   max-width: 500px;
   margin: auto;
 }
 
-h1 {
-  text-align: center;
-  font-size: 22px;
-}
+h1 { text-align: center; }
 
 .card {
   background: white;
   padding: 15px;
   border-radius: 16px;
   margin-bottom: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 select {
@@ -46,6 +40,7 @@ button {
 }
 
 .btn-vaga { background: #34c759; }
+.btn-confirmar { background: #ff9500; }
 .btn-whats { background: #25d366; }
 
 .kids {
@@ -65,7 +60,6 @@ button {
 .kid.active {
   background: #007aff;
   color: white;
-  font-weight: bold;
 }
 
 .car {
@@ -81,33 +75,16 @@ button {
 
 <div class="card">
 
-<select id="motorista">
-  <option>Carmen/João</option>
-  <option>Denise/Telmo</option>
-  <option>Karina/Jéferson</option>
-  <option>Natália/Pedro</option>
-  <option>Vanessa/Cris</option>
-</select>
+<select id="motorista"></select>
+<select id="dia"></select>
+<select id="tipo"></select>
+<select id="destino"></select>
 
-<select id="dia">
-  <option>Segunda</option>
-  <option>Terça</option>
-  <option>Quarta</option>
-  <option>Quinta</option>
-  <option>Sexta</option>
-</select>
+<button class="btn-vaga" onclick="prepararCarona()">🚐 Tenho vaga</button>
 
-<select id="tipo">
-  <option value="Levar">Ida</option>
-  <option value="Buscar">Volta</option>
-</select>
-
-<select id="destino">
-  <option value="Escola">Escola</option>
-  <option value="Futsal">Futsal</option>
-</select>
-
-<button class="btn-vaga" onclick="criarCarona()">🚐 Tenho vaga</button>
+<button id="btnConfirmar" class="btn-confirmar" onclick="confirmarCarona()" style="display:none;">
+✅ Confirmar carona
+</button>
 
 <div class="kids" id="kids"></div>
 
@@ -124,19 +101,28 @@ button {
 <script>
 const URL = "https://script.google.com/macros/s/AKfycbzv45aDvmAMqew1hyvBb6BhyL9aA3rvn_7rmxGyBCHQYBEpQhij4iyHnoEUMrEkjhIjkw/exec";
 
-const kidsLista = ["José","João","Joaquim","Beni","Bento","Finkler"];
+let caronaTemp = null;
 let selecionados = [];
 
+const motoristas = ["Carmen/João","Denise/Telmo","Karina/Jéferson","Natália/Pedro","Vanessa/Cris"];
+const dias = ["Segunda","Terça","Quarta","Quinta","Sexta"];
+
+document.getElementById("motorista").innerHTML = motoristas.map(m=>`<option>${m}</option>`).join("");
+document.getElementById("dia").innerHTML = dias.map(d=>`<option>${d}</option>`).join("");
+document.getElementById("tipo").innerHTML = `<option value="Levar">Ida</option><option value="Buscar">Volta</option>`;
+document.getElementById("destino").innerHTML = `<option>Escola</option><option>Futsal</option>`;
+
+const kidsLista = ["José","João","Joaquim","Beni","Bento","Finkler"];
 const kidsDiv = document.getElementById("kids");
 
-kidsLista.forEach(kid => {
-  const div = document.createElement("div");
-  div.className = "kid";
-  div.innerText = kid;
+kidsLista.forEach(kid=>{
+  const div=document.createElement("div");
+  div.className="kid";
+  div.innerText=kid;
 
-  div.onclick = () => {
-    if (selecionados.includes(kid)) {
-      selecionados = selecionados.filter(k => k !== kid);
+  div.onclick=()=>{
+    if(selecionados.includes(kid)){
+      selecionados=selecionados.filter(k=>k!==kid);
       div.classList.remove("active");
     } else {
       selecionados.push(kid);
@@ -147,141 +133,96 @@ kidsLista.forEach(kid => {
   kidsDiv.appendChild(div);
 });
 
-function criarCarona() {
-  const motorista = document.getElementById("motorista").value;
-  const dia = document.getElementById("dia").value;
-  const tipo = document.getElementById("tipo").value;
-  const destino = document.getElementById("destino").value;
+function prepararCarona(){
+  caronaTemp = {
+    motorista: document.getElementById("motorista").value,
+    dia: document.getElementById("dia").value,
+    tipo: document.getElementById("tipo").value,
+    destino: document.getElementById("destino").value
+  };
 
-  fetch(URL, {
-    method: "POST",
-    body: JSON.stringify({
-      motorista,
-      dia,
-      tipo,
-      destino,
-      kids: []
-    })
-  }).then(() => {
-    alert("Carona criada! 🚐");
+  document.getElementById("btnConfirmar").style.display = "block";
+}
+
+function confirmarCarona(){
+  fetch(URL,{
+    method:"POST",
+    body:JSON.stringify({...caronaTemp, kids:[]})
+  }).then(()=>{
+    alert("Carona confirmada! 🚐");
+    document.getElementById("btnConfirmar").style.display = "none";
     carregar();
   });
 }
 
-function entrarNaCarona(c) {
-  if (selecionados.length === 0) {
-    alert("Seleciona pelo menos uma criança");
+function entrarNaCarona(c){
+  if(selecionados.length===0){
+    alert("Seleciona criança");
     return;
   }
 
-  fetch(URL, {
-    method: "POST",
-    body: JSON.stringify({
-      motorista: c.motorista,
-      dia: c.dia,
-      tipo: c.tipo,
-      destino: c.destino,
-      kids: selecionados
-    })
-  }).then(() => {
-    selecionados = [];
-    document.querySelectorAll(".kid").forEach(k => k.classList.remove("active"));
-    alert("Entrou na carona! 👍");
+  fetch(URL,{
+    method:"POST",
+    body:JSON.stringify({...c, kids:selecionados})
+  }).then(()=>{
+    selecionados=[];
+    document.querySelectorAll(".kid").forEach(k=>k.classList.remove("active"));
     carregar();
   });
 }
 
-function formatarData(diaSemana) {
-  const dias = ["Segunda","Terça","Quarta","Quinta","Sexta"];
-  const hoje = new Date();
-  const hojeIndex = hoje.getDay() - 1;
-
-  let target = dias.indexOf(diaSemana);
-  let diff = target - hojeIndex;
-
-  if (diff < 0) diff += 7;
-
-  const data = new Date();
-  data.setDate(hoje.getDate() + diff);
-
-  const d = String(data.getDate()).padStart(2,"0");
-  const m = String(data.getMonth()+1).padStart(2,"0");
-
-  return `${diaSemana.slice(0,3)}, ${d}/${m}`;
-}
-
-function carregar() {
+function carregar(){
   fetch(URL)
-    .then(res => res.json())
-    .then(data => {
+  .then(r=>r.json())
+  .then(data=>{
+    const lista=document.getElementById("lista");
+    lista.innerHTML="";
 
-      const lista = document.getElementById("lista");
-      lista.innerHTML = "";
+    let grupos={};
 
-      let grupos = {};
+    data.forEach(l=>{
+      if(!l[0]) return;
+      const key=l[0]+l[1]+l[2]+l[3];
 
-      data.forEach(l => {
-        if (!l[0]) return;
-
-        const key = l[0] + l[1] + l[2] + l[3];
-
-        if (!grupos[key]) {
-          grupos[key] = {
-            dia: l[0],
-            destino: l[1],
-            motorista: l[2],
-            tipo: l[3],
-            kids: []
-          };
-        }
-
-        if (l[4]) {
-          l[4].split(", ").forEach(k => {
-            if (!grupos[key].kids.includes(k)) {
-              grupos[key].kids.push(k);
-            }
-          });
-        }
-      });
-
-      const carros = Object.values(grupos);
-
-      if (carros.length === 0) {
-        lista.innerHTML = "Nenhuma carona ainda";
-        return;
+      if(!grupos[key]){
+        grupos[key]={dia:l[0],destino:l[1],motorista:l[2],tipo:l[3],kids:[]};
       }
 
-      carros.forEach(c => {
-        const dataFormatada = formatarData(c.dia);
-
-        let html = `<div class="car">
-          <strong>🚐 ${dataFormatada} - ${c.destino} (${c.tipo})</strong><br>
-          ${c.motorista}<br>`;
-
-        c.kids.forEach(k => {
-          html += `→ ${k}<br>`;
+      if(l[4]){
+        l[4].split(", ").forEach(k=>{
+          if(!grupos[key].kids.includes(k)){
+            grupos[key].kids.push(k);
+          }
         });
-
-        html += `<button onclick='entrarNaCarona(${JSON.stringify(c)})'>Entrar nessa carona</button>`;
-        html += "</div>";
-
-        lista.innerHTML += html;
-      });
-
+      }
     });
+
+    Object.values(grupos).forEach(c=>{
+      let html=`<div class="car">
+      <strong>${c.dia} - ${c.destino} (${c.tipo})</strong><br>
+      ${c.motorista}<br>`;
+
+      c.kids.forEach(k=> html+=`→ ${k}<br>`);
+
+      html+=`<button onclick='entrarNaCarona(${JSON.stringify(c)})'>Entrar nessa carona</button>`;
+      html+="</div>";
+
+      lista.innerHTML+=html;
+    });
+
+    if(!lista.innerHTML) lista.innerHTML="Nenhuma carona ainda";
+  });
 }
 
-function enviarWhats() {
-  const lista = document.getElementById("lista").innerText;
+function enviarWhats(){
+  const lista=document.getElementById("lista").innerText;
 
-  if (!lista.trim() || lista.includes("Nenhuma")) {
-    alert("Nada para enviar ainda");
+  if(lista.includes("Nenhuma")){
+    alert("Nada pra enviar");
     return;
   }
 
-  const texto = `🚐 Barcas do Pedra Bonita\n\nAtualização de caronas:\n\n${lista}`;
-
-  window.open("https://wa.me/?text=" + encodeURIComponent(texto));
+  window.open("https://wa.me/?text="+encodeURIComponent(lista));
 }
 
 carregar();
