@@ -13,10 +13,7 @@ body {
   margin: auto;
 }
 
-h1 {
-  text-align: center;
-  color: white;
-}
+h1 { text-align: center; color: white; }
 
 .card {
   background: #2c2c2e;
@@ -48,6 +45,7 @@ button {
 
 .btn-main { background: #007aff; }
 .btn-whats { background: #25d366; }
+.btn-entrar { background: #34c759; }
 
 .kids {
   display: grid;
@@ -63,22 +61,12 @@ button {
   cursor: pointer;
 }
 
-.kid.active {
-  background: #007aff;
-}
+.kid.active { background: #007aff; }
 
 .car {
   border-bottom: 1px solid #444;
   padding: 10px 0;
 }
-
-.section-title {
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-.hora18 { color: #5ac8fa; font-weight: bold; }
-.hora19 { color: #007aff; font-weight: bold; }
 
 .label-pias {
   background: #ff9f0a;
@@ -89,6 +77,9 @@ button {
   text-align: center;
   margin: 10px 0;
 }
+
+.hora18 { color: #5ac8fa; font-weight: bold; }
+.hora19 { color: #007aff; font-weight: bold; }
 </style>
 </head>
 
@@ -98,53 +89,44 @@ button {
 
 <div class="card">
 
-<select id="motorista">
-  <option value="" disabled selected>Selecione a família</option>
-</select>
-
-<select id="dia">
-  <option value="" disabled selected>Selecione o dia</option>
-</select>
-
+<select id="motorista"></select>
+<select id="dia"></select>
 <select id="destino" onchange="toggleHorario()">
-  <option value="" disabled selected>Origem/Destino</option>
+  <option disabled selected>Origem/Destino</option>
   <option>Escola</option>
   <option>Futsal</option>
 </select>
 
 <select id="tipo" onchange="toggleHorario()">
-  <option value="" disabled selected>Trajeto</option>
+  <option disabled selected>Trajeto</option>
   <option value="Levar">Ida</option>
   <option value="Buscar">Volta</option>
 </select>
 
 <div id="horarioContainer" style="display:none;">
   <select id="horario">
-    <option value="" disabled selected>Horário</option>
+    <option disabled selected>Horário</option>
     <option>18h</option>
     <option>19h</option>
   </select>
 </div>
 
-<div class="label-pias">
-  Selecione os piás abaixo
-</div>
+<div class="label-pias">Selecione os piás abaixo</div>
 
 <div class="kids" id="kids"></div>
 
 <button class="btn-main" onclick="confirmarCarona()">✅ Confirmar carona</button>
-
 <button class="btn-whats" onclick="enviarWhats()">📤 Avisar no WhatsApp</button>
 
 </div>
 
 <div class="card">
-  <div class="section-title">📚 Escola</div>
+  <b>📚 Escola</b>
   <div id="escola"></div>
 </div>
 
 <div class="card">
-  <div class="section-title">⚽ Futsal</div>
+  <b>⚽ Futsal</b>
   <div id="futsal"></div>
 </div>
 
@@ -156,33 +138,32 @@ let selecionados = [];
 const motoristas = ["Carmen/João","Denise/Telmo","Karina/Jéferson","Natália/Pedro","Vanessa/Cris"];
 const dias = ["Segunda","Terça","Quarta","Quinta","Sexta"];
 
-document.getElementById("motorista").innerHTML += motoristas.map(m=>`<option>${m}</option>`).join("");
-document.getElementById("dia").innerHTML += dias.map(d=>`<option>${d}</option>`).join("");
+motoristas.forEach(m=>{
+  document.getElementById("motorista").innerHTML += `<option>${m}</option>`;
+});
+
+dias.forEach(d=>{
+  document.getElementById("dia").innerHTML += `<option>${d}</option>`;
+});
 
 function toggleHorario(){
   const destino = document.getElementById("destino").value;
   const tipo = document.getElementById("tipo").value;
-  const mostrar = destino === "Escola" && tipo === "Buscar";
 
-  const container = document.getElementById("horarioContainer");
-  const horario = document.getElementById("horario");
-
-  container.style.display = mostrar ? "block" : "none";
-
-  if (!mostrar) horario.value = "";
+  document.getElementById("horarioContainer").style.display =
+    (destino === "Escola" && tipo === "Buscar") ? "block" : "none";
 }
 
 const kidsLista = ["José","João","Joaquim","Beni","Bento","Finkler"];
-const kidsDiv = document.getElementById("kids");
 
 kidsLista.forEach(kid=>{
-  const div=document.createElement("div");
-  div.className="kid";
-  div.innerText=kid;
+  const div = document.createElement("div");
+  div.className = "kid";
+  div.innerText = kid;
 
-  div.onclick=()=>{
+  div.onclick = ()=>{
     if(selecionados.includes(kid)){
-      selecionados=selecionados.filter(k=>k!==kid);
+      selecionados = selecionados.filter(k=>k!==kid);
       div.classList.remove("active");
     } else {
       selecionados.push(kid);
@@ -190,95 +171,77 @@ kidsLista.forEach(kid=>{
     }
   };
 
-  kidsDiv.appendChild(div);
+  document.getElementById("kids").appendChild(div);
 });
 
 function confirmarCarona(){
-  const motorista = document.getElementById("motorista").value;
-  const dia = document.getElementById("dia").value;
-  const tipo = document.getElementById("tipo").value;
-  const destino = document.getElementById("destino").value;
-  const horario = document.getElementById("horario").value;
+  const data = {
+    motorista: motorista.value,
+    dia: dia.value,
+    tipo: tipo.value,
+    destino: destino.value,
+    horario: horario.value,
+    kids: []
+  };
 
-  if (!motorista || !dia || !tipo || !destino) {
-    alert("Preenche tudo antes de confirmar 👀");
-    return;
-  }
+  fetch(URL,{
+    method:"POST",
+    body: JSON.stringify(data)
+  }).then(()=>{
+    setTimeout(carregar, 800); // 🔥 melhora atualização
+  });
+}
 
-  if (destino === "Escola" && tipo === "Buscar" && !horario) {
-    alert("Seleciona o horário 👀");
+function entrarNaCarona(linha){
+  if(selecionados.length === 0){
+    alert("Seleciona pelo menos 1 piá");
     return;
   }
 
   fetch(URL,{
     method:"POST",
-    body:JSON.stringify({motorista,dia,tipo,destino,horario,kids:[]})
-  }).then(()=>carregar());
+    body: JSON.stringify({
+      ...linha,
+      kids: selecionados
+    })
+  }).then(()=>{
+    selecionados = [];
+    document.querySelectorAll(".kid").forEach(k=>k.classList.remove("active"));
+    setTimeout(carregar, 800);
+  });
 }
 
 function carregar(){
   fetch(URL)
   .then(r=>r.json())
   .then(data=>{
-    const escola=document.getElementById("escola");
-    const futsal=document.getElementById("futsal");
-
-    escola.innerHTML="";
-    futsal.innerHTML="";
-
-    if (!data || data.length === 0) {
-      escola.innerHTML="Nenhuma carona";
-      futsal.innerHTML="Nenhuma carona";
-      return;
-    }
+    escola.innerHTML = "";
+    futsal.innerHTML = "";
 
     data.slice().reverse().forEach(l=>{
-      if (!l || !l[0]) return;
+      if(!l[0]) return;
 
-      const dia=l[0];
-      const destino=l[1];
-      const motorista=l[2];
-      const tipo=l[3];
-      const kids=l[4];
-      const horario=l[5];
+      const html = `
+      <div class="car">
+        <b>${l[0]} - <span class="${l[5]=='18h'?'hora18':'hora19'}">${l[5]}</span> - ${l[1]} (${l[3]})</b><br>
+        ${l[2]}<br>
+        ${l[4] ? l[4].split(", ").map(k=>"→ "+k).join("<br>") : "<i>Nenhuma criança ainda</i>"}<br>
+        <button class="btn-entrar" onclick='entrarNaCarona(${JSON.stringify(l)})'>Entrar nessa carona</button>
+      </div>`;
 
-      const horaClass = horario === "18h" ? "hora18" : "hora19";
-
-      let html=`<div class="car">
-      <strong>${dia} ${horario ? "- " : ""}<span class="${horaClass}">${horario || ""}</span> - ${destino} (${tipo})</strong><br>
-      ${motorista}<br>`;
-
-      if(kids){
-        kids.split(", ").forEach(k=>{
-          html+=`→ ${k}<br>`;
-        });
-      } else {
-        html+=`<em style="color:#aaa;">Nenhuma criança ainda</em><br>`;
-      }
-
-      html+="</div>";
-
-      if(destino==="Escola") escola.innerHTML+=html;
-      else futsal.innerHTML+=html;
+      if(l[1]=="Escola") escola.innerHTML += html;
+      else futsal.innerHTML += html;
     });
   });
 }
 
 function enviarWhats(){
-  let texto="🚐 Barcas do Pedra Bonita\n\n";
+  let texto = "🚐 Barcas do Pedra Bonita\n\n";
 
-  const escola=document.getElementById("escola").innerText.trim();
-  const futsal=document.getElementById("futsal").innerText.trim();
+  texto += document.getElementById("escola").innerText + "\n\n";
+  texto += document.getElementById("futsal").innerText;
 
-  if(escola && !escola.includes("Nenhuma")){
-    texto+="📚 Escola:\n"+escola+"\n\n";
-  }
-
-  if(futsal && !futsal.includes("Nenhuma")){
-    texto+="⚽ Futsal:\n"+futsal+"\n\n";
-  }
-
-  window.open("https://wa.me/?text="+encodeURIComponent(texto));
+  window.open("https://wa.me/?text=" + encodeURIComponent(texto));
 }
 
 carregar();
