@@ -78,8 +78,8 @@ button {
   margin: 10px 0;
 }
 
-.hora18 { color: #5ac8fa; font-weight: bold; }
-.hora19 { color: #007aff; font-weight: bold; }
+.hora18 { color: #5ac8fa; }
+.hora19 { color: #007aff; }
 </style>
 </head>
 
@@ -89,23 +89,29 @@ button {
 
 <div class="card">
 
-<select id="motorista"></select>
-<select id="dia"></select>
+<select id="motorista">
+  <option value="" disabled selected>Selecione a família</option>
+</select>
+
+<select id="dia">
+  <option value="" disabled selected>Selecione o dia</option>
+</select>
+
 <select id="destino" onchange="toggleHorario()">
-  <option disabled selected>Origem/Destino</option>
+  <option value="" disabled selected>Origem/Destino</option>
   <option>Escola</option>
   <option>Futsal</option>
 </select>
 
 <select id="tipo" onchange="toggleHorario()">
-  <option disabled selected>Trajeto</option>
+  <option value="" disabled selected>Trajeto</option>
   <option value="Levar">Ida</option>
   <option value="Buscar">Volta</option>
 </select>
 
 <div id="horarioContainer" style="display:none;">
   <select id="horario">
-    <option disabled selected>Horário</option>
+    <option value="" disabled selected>Horário</option>
     <option>18h</option>
     <option>19h</option>
   </select>
@@ -116,6 +122,7 @@ button {
 <div class="kids" id="kids"></div>
 
 <button class="btn-main" onclick="confirmarCarona()">✅ Confirmar carona</button>
+
 <button class="btn-whats" onclick="enviarWhats()">📤 Avisar no WhatsApp</button>
 
 </div>
@@ -139,19 +146,16 @@ const motoristas = ["Carmen/João","Denise/Telmo","Karina/Jéferson","Natália/P
 const dias = ["Segunda","Terça","Quarta","Quinta","Sexta"];
 
 motoristas.forEach(m=>{
-  document.getElementById("motorista").innerHTML += `<option>${m}</option>`;
+  motorista.innerHTML += `<option>${m}</option>`;
 });
 
 dias.forEach(d=>{
-  document.getElementById("dia").innerHTML += `<option>${d}</option>`;
+  dia.innerHTML += `<option>${d}</option>`;
 });
 
 function toggleHorario(){
-  const destino = document.getElementById("destino").value;
-  const tipo = document.getElementById("tipo").value;
-
-  document.getElementById("horarioContainer").style.display =
-    (destino === "Escola" && tipo === "Buscar") ? "block" : "none";
+  const mostrar = destino.value === "Escola" && tipo.value === "Buscar";
+  horarioContainer.style.display = mostrar ? "block" : "none";
 }
 
 const kidsLista = ["José","João","Joaquim","Beni","Bento","Finkler"];
@@ -171,29 +175,25 @@ kidsLista.forEach(kid=>{
     }
   };
 
-  document.getElementById("kids").appendChild(div);
+  kids.appendChild(div);
 });
 
 function confirmarCarona(){
-  const data = {
-    motorista: motorista.value,
-    dia: dia.value,
-    tipo: tipo.value,
-    destino: destino.value,
-    horario: horario.value,
-    kids: []
-  };
-
   fetch(URL,{
     method:"POST",
-    body: JSON.stringify(data)
-  }).then(()=>{
-    setTimeout(carregar, 800); // 🔥 melhora atualização
-  });
+    body: JSON.stringify({
+      motorista: motorista.value,
+      dia: dia.value,
+      tipo: tipo.value,
+      destino: destino.value,
+      horario: horario.value,
+      kids: []
+    })
+  }).then(()=>setTimeout(carregar,500));
 }
 
-function entrarNaCarona(linha){
-  if(selecionados.length === 0){
+function entrarNaCarona(l){
+  if(selecionados.length===0){
     alert("Seleciona pelo menos 1 piá");
     return;
   }
@@ -201,13 +201,17 @@ function entrarNaCarona(linha){
   fetch(URL,{
     method:"POST",
     body: JSON.stringify({
-      ...linha,
+      dia:l[0],
+      destino:l[1],
+      motorista:l[2],
+      tipo:l[3],
+      horario:l[5],
       kids: selecionados
     })
   }).then(()=>{
-    selecionados = [];
+    selecionados=[];
     document.querySelectorAll(".kid").forEach(k=>k.classList.remove("active"));
-    setTimeout(carregar, 800);
+    setTimeout(carregar,500);
   });
 }
 
@@ -215,42 +219,36 @@ function carregar(){
   fetch(URL)
   .then(r=>r.json())
   .then(data=>{
-    escola.innerHTML = "";
-    futsal.innerHTML = "";
+    escola.innerHTML="";
+    futsal.innerHTML="";
 
     data.slice().reverse().forEach(l=>{
       if(!l[0]) return;
 
-      const html = `
+      let html = `
       <div class="car">
-        <b>${l[0]} - <span class="${l[5]=='18h'?'hora18':'hora19'}">${l[5]}</span> - ${l[1]} (${l[3]})</b><br>
-        ${l[2]}<br>
-        ${l[4] ? l[4].split(", ").map(k=>"→ "+k).join("<br>") : "<i>Nenhuma criança ainda</i>"}<br>
-        <button class="btn-entrar" onclick='entrarNaCarona(${JSON.stringify(l)})'>Entrar nessa carona</button>
+      <b>${l[0]} - <span class="${l[5]=='18h'?'hora18':'hora19'}">${l[5]}</span> - ${l[1]} (${l[3]})</b><br>
+      ${l[2]}<br>
+      ${l[4] ? l[4].split(", ").map(k=>"→ "+k).join("<br>") : "<i>Nenhuma criança ainda</i>"}<br>
+      <button class="btn-entrar" onclick='entrarNaCarona(${JSON.stringify(l)})'>Entrar nessa carona</button>
       </div>`;
 
-      if(l[1]=="Escola") escola.innerHTML += html;
-      else futsal.innerHTML += html;
+      if(l[1]=="Escola") escola.innerHTML+=html;
+      else futsal.innerHTML+=html;
     });
   });
 }
 
 function enviarWhats(){
-  let texto = "🚐 Barcas do Pedra Bonita\n\n";
+  let texto="🚐 Barcas do Pedra Bonita\n\n";
 
-  const cards = document.querySelectorAll(".car");
-
-  cards.forEach(c => {
-    texto += c.innerText + "\n\n";
+  document.querySelectorAll(".car").forEach(c=>{
+    texto+=c.innerText+"\n\n";
   });
 
-  if (texto.trim() === "🚐 Barcas do Pedra Bonita") {
-    alert("Nada pra enviar");
-    return;
-  }
-
-  window.open("https://wa.me/?text=" + encodeURIComponent(texto));
+  window.open("https://wa.me/?text="+encodeURIComponent(texto));
 }
+
 carregar();
 </script>
 
