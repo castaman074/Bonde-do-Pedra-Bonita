@@ -98,6 +98,14 @@ button {
 </div>
 
 <div class="select-group">
+  <div class="label">Horário</div>
+  <select id="horario">
+    <option>18h</option>
+    <option>19h</option>
+  </select>
+</div>
+
+<div class="select-group">
   <div class="label">Trajeto</div>
   <select id="tipo"></select>
 </div>
@@ -120,15 +128,15 @@ button {
 </div>
 
 <script>
-const URL = "https://script.google.com/macros/s/AKfycbxOmFGPt5VZ45ObgTfiV7uAs7X4LRdd1suLnc4Xps9IRALThFOpxl30txQcEQQuwKjBpQ/exec";
+const URL = "https://script.google.com/macros/s/AKfycbx2R19w-DI-GrlBygAzOD02hgHTaibslL302CDTqKzZRQvibaFtHMJr5p_hbuv3vF6Y9w/exec";
 
 let selecionados = [];
 
-const ordemDias = ["Segunda","Terça","Quarta","Quinta","Sexta"];
 const motoristas = ["Carmen/João","Denise/Telmo","Karina/Jéferson","Natália/Pedro","Vanessa/Cris"];
+const dias = ["Segunda","Terça","Quarta","Quinta","Sexta"];
 
 document.getElementById("motorista").innerHTML = motoristas.map(m=>`<option>${m}</option>`).join("");
-document.getElementById("dia").innerHTML = ordemDias.map(d=>`<option>${d}</option>`).join("");
+document.getElementById("dia").innerHTML = dias.map(d=>`<option>${d}</option>`).join("");
 document.getElementById("tipo").innerHTML = `<option value="Levar">Ida</option><option value="Buscar">Volta</option>`;
 document.getElementById("destino").innerHTML = `<option>Escola</option><option>Futsal</option>`;
 
@@ -158,10 +166,11 @@ function confirmarCarona(){
   const dia = document.getElementById("dia").value;
   const tipo = document.getElementById("tipo").value;
   const destino = document.getElementById("destino").value;
+  const horario = document.getElementById("horario").value;
 
   fetch(URL,{
     method:"POST",
-    body:JSON.stringify({motorista,dia,tipo,destino,kids:[]})
+    body:JSON.stringify({motorista,dia,tipo,destino,horario,kids:[]})
   }).then(()=>{
     alert("Carona confirmada! 🚐");
     carregar();
@@ -184,39 +193,6 @@ function entrarNaCarona(c){
   });
 }
 
-function formatarData(diaSemana){
-  const hoje = new Date();
-  const hojeIndex = hoje.getDay() - 1;
-
-  let target = ordemDias.indexOf(diaSemana);
-  let diff = target - hojeIndex;
-
-  if(diff < 0) diff += 7;
-
-  const data = new Date();
-  data.setDate(hoje.getDate() + diff);
-
-  const d = String(data.getDate()).padStart(2,"0");
-  const m = String(data.getMonth()+1).padStart(2,"0");
-
-  return `${diaSemana.slice(0,3)}, ${d}/${m}`;
-}
-
-// 🔥 RESET AUTOMÁTICO DIÁRIO
-function checarReset(){
-  const hoje = new Date().toDateString();
-  const ultimo = localStorage.getItem("ultimoUso");
-
-  if(ultimo !== hoje){
-    localStorage.setItem("ultimoUso", hoje);
-
-    fetch(URL,{
-      method:"POST",
-      body:JSON.stringify({reset:true})
-    }).then(()=>carregar());
-  }
-}
-
 function carregar(){
   fetch(URL)
   .then(r=>r.json())
@@ -226,13 +202,14 @@ function carregar(){
 
     let grupos={};
 
-    data.forEach(l=>{
+    // 🔥 inverter ordem (mais novo primeiro)
+    data.reverse().forEach(l=>{
       if(!l[0]) return;
 
-      const key=l[0]+l[1]+l[2]+l[3];
+      const key=l[0]+l[1]+l[2]+l[3]+l[5];
 
       if(!grupos[key]){
-        grupos[key]={dia:l[0],destino:l[1],motorista:l[2],tipo:l[3],kids:[]};
+        grupos[key]={dia:l[0],destino:l[1],motorista:l[2],tipo:l[3],kids:[],horario:l[5]};
       }
 
       if(l[4]){
@@ -244,15 +221,9 @@ function carregar(){
       }
     });
 
-    const ordenado = Object.values(grupos).sort((a,b)=>{
-      return ordemDias.indexOf(a.dia) - ordemDias.indexOf(b.dia);
-    });
-
-    ordenado.forEach(c=>{
-      const dataFormatada = formatarData(c.dia);
-
+    Object.values(grupos).forEach(c=>{
       let html=`<div class="car">
-      <strong>${dataFormatada} - ${c.destino} (${c.tipo})</strong><br>
+      <strong>${c.dia} - ${c.horario} - ${c.destino} (${c.tipo})</strong><br>
       ${c.motorista}<br>`;
 
       c.kids.forEach(k=> html+=`→ ${k}<br>`);
@@ -278,8 +249,6 @@ function enviarWhats(){
   window.open("https://wa.me/?text="+encodeURIComponent(lista));
 }
 
-// roda ao abrir
-checarReset();
 carregar();
 </script>
 
