@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <title>Barcas do Pedra Bonita</title>
 
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#007aff">
+
 <style>
 body {
   font-family: -apple-system, sans-serif;
@@ -63,11 +66,6 @@ button {
 
 .kid.active { background: #007aff; }
 
-.car {
-  border-bottom: 1px solid #444;
-  padding: 10px 0;
-}
-
 .label-pias {
   background: #ff9f0a;
   color: black;
@@ -76,6 +74,11 @@ button {
   border-radius: 8px;
   text-align: center;
   margin: 10px 0;
+}
+
+.car {
+  border-bottom: 1px solid #444;
+  padding: 10px 0;
 }
 
 .hora18 { color: #5ac8fa; }
@@ -90,166 +93,145 @@ button {
 <div class="card">
 
 <select id="motorista">
-  <option value="" disabled selected>Selecione a família</option>
+<option disabled selected>Selecione a família</option>
+<option>Carmen/João</option>
+<option>Denise/Telmo</option>
+<option>Karina/Jéferson</option>
+<option>Natália/Pedro</option>
+<option>Vanessa/Cris</option>
 </select>
 
 <select id="dia">
-  <option value="" disabled selected>Selecione o dia</option>
+<option disabled selected>Selecione o dia</option>
+<option>Segunda</option>
+<option>Terça</option>
+<option>Quarta</option>
+<option>Quinta</option>
+<option>Sexta</option>
 </select>
 
 <select id="destino" onchange="toggleHorario()">
-  <option value="" disabled selected>Origem/Destino</option>
-  <option>Escola</option>
-  <option>Futsal</option>
+<option disabled selected>Origem/Destino</option>
+<option>Escola</option>
+<option>Futsal</option>
 </select>
 
 <select id="tipo" onchange="toggleHorario()">
-  <option value="" disabled selected>Trajeto</option>
-  <option value="Levar">Ida</option>
-  <option value="Buscar">Volta</option>
+<option disabled selected>Trajeto</option>
+<option value="Levar">Ida</option>
+<option value="Buscar">Volta</option>
 </select>
 
 <div id="horarioContainer" style="display:none;">
-  <select id="horario">
-    <option value="" disabled selected>Horário</option>
-    <option>18h</option>
-    <option>19h</option>
-  </select>
+<select id="horario">
+<option disabled selected>Horário</option>
+<option>18h</option>
+<option>19h</option>
+</select>
 </div>
 
 <div class="label-pias">Selecione os piás abaixo</div>
-
 <div class="kids" id="kids"></div>
 
-<button class="btn-main" onclick="confirmarCarona()">✅ Confirmar carona</button>
-
-<button class="btn-whats" onclick="enviarWhats()">📤 Avisar no WhatsApp</button>
+<button class="btn-main" onclick="confirmar()">✅ Confirmar carona</button>
+<button class="btn-whats" onclick="whats()">📤 Avisar no WhatsApp</button>
 
 </div>
 
 <div class="card">
-  <b>📚 Escola</b>
-  <div id="escola"></div>
+<b>📚 Escola</b>
+<div id="escola"></div>
 </div>
 
 <div class="card">
-  <b>⚽ Futsal</b>
-  <div id="futsal"></div>
+<b>⚽ Futsal</b>
+<div id="futsal"></div>
 </div>
 
 <script>
 const URL = "https://script.google.com/macros/s/AKfycbzZeQKg_1NaJSWvNye7iHCtcRsZWdwd5fJVvfufT7WB0FZ6PAGzaVh4rQmR8VUW9SwgQg/exec";
-
-let selecionados = [];
-
-const motoristas = ["Carmen/João","Denise/Telmo","Karina/Jéferson","Natália/Pedro","Vanessa/Cris"];
-const dias = ["Segunda","Terça","Quarta","Quinta","Sexta"];
-
-motoristas.forEach(m=>{
-  motorista.innerHTML += `<option>${m}</option>`;
-});
-
-dias.forEach(d=>{
-  dia.innerHTML += `<option>${d}</option>`;
-});
+let selecionados=[];
 
 function toggleHorario(){
-  const mostrar = destino.value === "Escola" && tipo.value === "Buscar";
-  horarioContainer.style.display = mostrar ? "block" : "none";
+  horarioContainer.style.display =
+    (destino.value==="Escola" && tipo.value==="Buscar")?"block":"none";
 }
 
-const kidsLista = ["José","João","Joaquim","Beni","Bento","Finkler"];
-
-kidsLista.forEach(kid=>{
-  const div = document.createElement("div");
-  div.className = "kid";
-  div.innerText = kid;
-
-  div.onclick = ()=>{
-    if(selecionados.includes(kid)){
-      selecionados = selecionados.filter(k=>k!==kid);
-      div.classList.remove("active");
+["José","João","Joaquim","Beni","Bento","Finkler"].forEach(k=>{
+  const d=document.createElement("div");
+  d.className="kid";
+  d.innerText=k;
+  d.onclick=()=>{
+    if(selecionados.includes(k)){
+      selecionados=selecionados.filter(x=>x!==k);
+      d.classList.remove("active");
     } else {
-      selecionados.push(kid);
-      div.classList.add("active");
+      selecionados.push(k);
+      d.classList.add("active");
     }
   };
-
-  kids.appendChild(div);
+  kids.appendChild(d);
 });
 
-function confirmarCarona(){
+function confirmar(){
   fetch(URL,{
     method:"POST",
-    body: JSON.stringify({
-      motorista: motorista.value,
-      dia: dia.value,
-      tipo: tipo.value,
-      destino: destino.value,
-      horario: horario.value,
-      kids: []
+    body:JSON.stringify({
+      motorista:motorista.value,
+      dia:dia.value,
+      tipo:tipo.value,
+      destino:destino.value,
+      horario:horario.value,
+      kids:[]
     })
-  }).then(()=>setTimeout(carregar,500));
+  }).then(()=>setTimeout(load,600));
 }
 
-function entrarNaCarona(l){
-  if(selecionados.length===0){
-    alert("Seleciona pelo menos 1 piá");
-    return;
-  }
-
+function entrar(l){
+  if(!selecionados.length){alert("Seleciona alguém");return;}
   fetch(URL,{
     method:"POST",
-    body: JSON.stringify({
-      dia:l[0],
-      destino:l[1],
-      motorista:l[2],
-      tipo:l[3],
-      horario:l[5],
-      kids: selecionados
+    body:JSON.stringify({
+      dia:l[0],destino:l[1],motorista:l[2],
+      tipo:l[3],horario:l[5],kids:selecionados
     })
   }).then(()=>{
     selecionados=[];
     document.querySelectorAll(".kid").forEach(k=>k.classList.remove("active"));
-    setTimeout(carregar,500);
+    setTimeout(load,600);
   });
 }
 
-function carregar(){
-  fetch(URL)
-  .then(r=>r.json())
-  .then(data=>{
-    escola.innerHTML="";
-    futsal.innerHTML="";
-
+function load(){
+  fetch(URL).then(r=>r.json()).then(data=>{
+    escola.innerHTML=""; futsal.innerHTML="";
     data.slice().reverse().forEach(l=>{
-      if(!l[0]) return;
+      if(!l[0])return;
 
-      let html = `
+      let html=`
       <div class="car">
       <b>${l[0]} - <span class="${l[5]=='18h'?'hora18':'hora19'}">${l[5]}</span> - ${l[1]} (${l[3]})</b><br>
       ${l[2]}<br>
-      ${l[4] ? l[4].split(", ").map(k=>"→ "+k).join("<br>") : "<i>Nenhuma criança ainda</i>"}<br>
-      <button class="btn-entrar" onclick='entrarNaCarona(${JSON.stringify(l)})'>Entrar nessa carona</button>
+      ${l[4]?l[4].split(", ").map(k=>"→ "+k).join("<br>"):"<i>Nenhuma criança ainda</i>"}<br>
+      <button class="btn-entrar" onclick='entrar(${JSON.stringify(l)})'>Entrar nessa carona</button>
       </div>`;
 
-      if(l[1]=="Escola") escola.innerHTML+=html;
-      else futsal.innerHTML+=html;
+      (l[1]=="Escola"?escola:futsal).innerHTML+=html;
     });
   });
 }
 
-function enviarWhats(){
-  let texto="🚐 Barcas do Pedra Bonita\n\n";
-
-  document.querySelectorAll(".car").forEach(c=>{
-    texto+=c.innerText+"\n\n";
-  });
-
-  window.open("https://wa.me/?text="+encodeURIComponent(texto));
+function whats(){
+  let t="🚐 Barcas do Pedra Bonita\n\n";
+  document.querySelectorAll(".car").forEach(c=>t+=c.innerText+"\n\n");
+  window.open("https://wa.me/?text="+encodeURIComponent(t));
 }
 
-carregar();
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js');
+}
+
+load();
 </script>
 
 </body>
