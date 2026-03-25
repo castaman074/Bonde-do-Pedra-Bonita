@@ -120,6 +120,10 @@ button {
 
 <button class="btn-main" onclick="confirmarCarona()">✅ Confirmar carona</button>
 
+<div style="margin-top:10px; font-weight:bold; color:#aaa;">
+  Selecione os piás abaixo:
+</div>
+
 <div class="kids" id="kids"></div>
 
 <button class="btn-whats" onclick="enviarWhats()">📤 Avisar no WhatsApp</button>
@@ -217,7 +221,7 @@ function entrarNaCarona(c){
     body:JSON.stringify({...c, kids:selecionados})
   }).then(()=>{
     selecionados=[];
-    document.querySelectorAll(".kid").forEach(k=>k.classList.remove("active"));
+    document.querySelectorAll(".kid").forEach(k => k.classList.remove("active"));
     carregar();
   });
 }
