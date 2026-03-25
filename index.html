@@ -238,12 +238,19 @@ function carregar(){
 function enviarWhats(){
   let texto = "🚐 Barcas do Pedra Bonita\n\n";
 
-  texto += document.getElementById("escola").innerText + "\n\n";
-  texto += document.getElementById("futsal").innerText;
+  const cards = document.querySelectorAll(".car");
+
+  cards.forEach(c => {
+    texto += c.innerText + "\n\n";
+  });
+
+  if (texto.trim() === "🚐 Barcas do Pedra Bonita") {
+    alert("Nada pra enviar");
+    return;
+  }
 
   window.open("https://wa.me/?text=" + encodeURIComponent(texto));
 }
-
 carregar();
 </script>
 
